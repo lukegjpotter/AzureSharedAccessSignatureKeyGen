@@ -14,7 +14,8 @@ public class Main {
         // Values to be Set from args.
         String httpMethod = "PUT"; // should be args[0]
         String storageAccountName = ""; // should be args [1]
-        String key = ""; // should be args [2]
+        String key = "blah/blah..=="; // should be args [2]
+        String containerPath = "container-name/sub-container-name"; // should be args[3]
 
         // Values to be set programmatically.
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z"); // Sat, 21 Feb 2015 00:48:38
@@ -34,7 +35,7 @@ public class Main {
                 + "\n" // If-Unmodified-Since
                 + "\n" // Range
                 + "x-ms-date:" + formattedDate + "\nx-ms-version:2020-04-08\n" // CanonicalizedHeaders
-                + "/" + storageAccountName + "/" + "\ncomp:list"; // CanonicalizedResource
+                + "/" + storageAccountName + "/" + containerPath + "\ncomp:list\nrestype:container"; // CanonicalizedResource
 
         try {
             System.out.println(getAuthenticationString(stringToSign, storageAccountName, key));
