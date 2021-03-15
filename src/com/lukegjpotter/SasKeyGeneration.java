@@ -10,7 +10,19 @@ import java.util.Base64;
 
 public class SasKeyGeneration {
 
-    public String getSasToken(String storageAccountCanonicalizedResource, String storageAccountKey) {
+    /**
+     * This method generates an SAS for a Container for Blob Operations, such as Put Blob API and Get Blob API.
+     * It defaults to using the hardcoded values below, but these can be parameterised as needed.
+     *
+     * @param storageAccountCanonicalizedResource This is the string that denotes the Resource.
+     *                                            It is available in the {@link PrivateConfiguration} class.
+     *                                            It is of the format: /blob/storageaccount/container
+     * @param storageAccountKey                   This is a long string that ends with ==.
+     *                                            This can be sourced from the Azure Portal.
+     *                                            In the Azure Portal, navigate to the Storage Account, and choose Access Keys.
+     * @return The Shared Access Signature for the Storage Account's Container.
+     */
+    public String getSasToken(final String storageAccountCanonicalizedResource, final String storageAccountKey) {
         final String permissions = "rcwl"; // Read Write List
         final String resource = "c"; // Container c, Object o
         final String startDateString = "2021-03-11T12:00:00Z";
