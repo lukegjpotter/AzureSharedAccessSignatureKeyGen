@@ -4,31 +4,38 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 public class SasKeyGeneration {
 
-    public String getSasToken() {
-        final String permissions = "rwl"; // Read Write List
-        final String resource = "c"; // Container
-        final String service = "b"; // Blob
-        final String startDateString = "2021-03-03T15:03:00Z";
-        final String expiryDateString = "2021-03-04T15:03:00Z";
+    public String getSasToken(String storageAccountCanonicalizedResource, String storageAccountKey) {
+        final String permissions = "rcwl"; // Read Write List
+        final String resource = "c"; // Container c, Object o
+        final String startDateString = "2021-03-11T12:00:00Z";
+        final String expiryDateString = "2022-03-13T12:00:00Z";
         final String azureApiVersion = "2020-04-08";
 
         /* Source: Create Account SAS
-         * Link: https://docs.microsoft.com/en-us/rest/api/storageservices/create-account-sas */
-        final String storageSasStringToSign = PrivateConfiguration.storageAccount1Name + "\n" // accountname
-                + permissions + "\n" // signedpermissions
-                + service + "\n" // signedservice
-                + resource + "\n" // signedresourcetype
+         * Link: https://docs.microsoft.com/en-us/rest/api/storageservices/create-account-sas
+         *       https://docs.microsoft.com/en-us/rest/api/storageservices/service-sas-examples#example-get-a-blob-using-a-containers-shared-access-signature */
+        final String stringToSign = permissions + "\n" // signedpermissions
                 + startDateString + "\n" // signedstart
                 + expiryDateString + "\n" // signedexpiry
-                + "\n" // signedIP
-                + "\n" // signedProtocol
-                + azureApiVersion + "\n"; // signedversion
+                + storageAccountCanonicalizedResource + "\n" // Canonical Resource
+                + "\n" // 1
+                + "\n" // 2
+                + "\n" // 3
+                + azureApiVersion + "\n" // signedversion
+                + resource + "\n" // signedresourcetype
+                + "\n" // 1
+                + "\n" // 2
+                + "\n" // 3
+                + "\n" // 4
+                + "\n"; // 5
 
-        final String signature = getHMAC256(PrivateConfiguration.storageAccount1Key, storageSasStringToSign);
+        final String signature = getHMAC256(storageAccountKey, stringToSign);
 
         return "?"
                 + "sv=" + azureApiVersion
@@ -40,16 +47,16 @@ public class SasKeyGeneration {
     }
 
     private String getHMAC256(String accountKey, String stringToSign) {
-        final String algorithm = "HmacSHA256";
-        String signature = null;
         try {
+            final String algorithm = "HmacSHA256";
             SecretKeySpec secretKey = new SecretKeySpec(Base64.getDecoder().decode(accountKey), algorithm);
             Mac sha256HMAC = Mac.getInstance(algorithm);
             sha256HMAC.init(secretKey);
-            signature = Base64.getEncoder().encodeToString(sha256HMAC.doFinal(stringToSign.getBytes(StandardCharsets.UTF_8)));
-        } catch (Exception e) {
+            return Base64.getEncoder().encodeToString(sha256HMAC.doFinal(stringToSign.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             e.printStackTrace();
         }
-        return signature;
+
+        return "";
     }
 }
